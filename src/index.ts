@@ -26,7 +26,6 @@ app.get("/api/v1/products", async (req, res) => {
   }
 });
 
-//Customer routes
 app.use("/api/v1/customers", customerRoutes);
 
 const PORT = 3000;

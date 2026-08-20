@@ -24,7 +24,7 @@ router.get("/", async (req, res) => {
 router.get("/:id", async (req, res) => {
   try {
     const { id } = req.params;
-
+    
     const result = await pool.query(
       "SELECT customer_id, customer_name, city, membership_level FROM customer WHERE customer_id = $1",
       [id]
