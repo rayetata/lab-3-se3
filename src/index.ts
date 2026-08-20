@@ -1,6 +1,8 @@
 import express from "express";
 import { pool } from "./db";
 import customerRoutes from "./routes/customers";
+import productRoutes from "./routes/product";
+import ordersRoutes from "./routes/orders";
 
 const app = express();
 
@@ -27,6 +29,8 @@ app.get("/api/v1/products", async (req, res) => {
 });
 
 app.use("/api/v1/customers", customerRoutes);
+app.use("/api/v1/products", productRoutes);
+app.use("/api/v1/orders", ordersRoutes);
 
 const PORT = 3000;
 
