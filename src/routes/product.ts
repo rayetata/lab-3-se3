@@ -20,19 +20,19 @@ router.get("/", async (req, res) => {
   }
 });
 
-// Get one customer by ID
+// Get one products by ID
 router.get("/:id", async (req, res) => {
   try {
     const { id } = req.params;
     
     const result = await pool.query(
-      "SELECT customer_id, customer_name, city, membership_level FROM customer WHERE customer_id = $1",
+      "SELECT product_id, product_name, category, unit_price FROM product WHERE product_id = $1",
       [id]
     );
 
     if (result.rows.length === 0) {
       return res.status(404).json({
-        message: "Customer not found",
+        message: "product not found",
       });
     }
 
@@ -46,49 +46,49 @@ router.get("/:id", async (req, res) => {
   }
 });
 
-//Create a new customer
+//add a new product
 router.post("/", async (req, res) => {
   try {
     const {
-      customer_id,
-      customer_name,
-      city,
-      membership_level,
+      product_id,
+      product_name,
+      category,
+      unit_price,
     } = req.body;
 
-    if (!customer_id || !customer_name) {
+    if (!product_id || !product_name) {
       return res.status(400).json({
-        message: "customer_id and customer_name are required",
+        message: "product_id and product_name are required",
       });
     }
 
     const result = await pool.query(
       `INSERT INTO customer
-       (customer_id, customer_name, city, membership_level)
+       (product_id, product_name, category, unit_price)
        VALUES ($1, $2, $3, $4)
-       RETURNING customer_id, customer_name, city, membership_level`,
-      [customer_id, customer_name, city, membership_level]
+       RETURNING product_id, product_name, category, unit_price`,
+      [product_id, product_name, category, unit_price]
     );
 
     res.status(201).json(result.rows[0]);
   } catch (error) {
-    console.error("Error creating customer:", error);
+    console.error("Error creating product:", error);
 
     res.status(400).json({
-      message: "Unable to create customer",
+      message: "Unable to create product",
     });
   }
 });
 
-// Update a Customer
+// Update a product
 router.put("/:id", async (req, res) => {
   try {
     const { id } = req.params;
-    const { city, membership_level } = req.body;
+    const { product_name, unit_price } = req.body;
 
-    if (city === undefined && membership_level === undefined) {
+    if (product_name === undefined && id === undefined) {
       return res.status(400).json({
-        message: "city or membership_level is required",
+        message: "product_name and id is required",
       });
     }
 
