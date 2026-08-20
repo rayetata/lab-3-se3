@@ -1,6 +1,8 @@
 import express from "express";
 import { pool } from "./db";
 import customerRoutes from "./routes/customers";
+import orderRoutes from "./routes/orders";
+import productRoutes from "./routes/product";
 import orderItemRoutes from "./routes/order-items";
 import vendorRoutes from "./routes/vendors";
 
@@ -29,6 +31,8 @@ app.get("/api/v1/products", async (req, res) => {
 });
 
 app.use("/api/v1/customers", customerRoutes);
+app.use("/api/v1/orders", orderRoutes);
+app.use("/api/v1/products", productRoutes);
 app.use("/api/v1/order-items", orderItemRoutes);
 app.use("/api/v1/vendors", vendorRoutes);
 
