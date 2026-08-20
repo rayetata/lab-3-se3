@@ -1,10 +1,10 @@
-import { Router } from "express";
+import { Router, Request, Response } from "express";
 import { pool } from "../db";
 
 const router = Router();
 
 //Get all products
-router.get("/", async (req, res) => {
+router.get("/", async (req: Request, res: Response) => {
   try {
     const result =  await pool.query(
         "SELECT product_id, product_name, category, unit_price FROM product"
@@ -21,7 +21,7 @@ router.get("/", async (req, res) => {
 });
 
 // Get one products by ID
-router.get("/:id", async (req, res) => {
+router.get("/:id", async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     
@@ -47,7 +47,7 @@ router.get("/:id", async (req, res) => {
 });
 
 //add a new product
-router.post("/", async (req, res) => {
+router.post("/", async (req: Request, res: Response) => {
   try {
     const {
       product_id,
@@ -81,68 +81,72 @@ router.post("/", async (req, res) => {
 });
 
 // Update a product
-router.put("/:id", async (req, res) => {
+router.patch("/:id/price", async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    const { product_name, unit_price } = req.body;
+    const { unit_price } = req.body;
 
-    if (product_name === undefined && id === undefined) {
+    if (unit_price === undefined) {
       return res.status(400).json({
-        message: "product_name and id is required",
+        message: "unit_price is required",
+      });
+    }
+
+    if (typeof unit_price !== "number" || unit_price < 0) {
+      return res.status(400).json({
+        message: "unit_price must be a valid positive number",
       });
     }
 
     const result = await pool.query(
-      `UPDATE customer
-       SET
-         city = COALESCE($1, city),
-         membership_level = COALESCE($2, membership_level)
-       WHERE customer_id = $3
-       RETURNING customer_id, customer_name, city, membership_level`,
-      [city ?? null, membership_level ?? null, id]
+      `UPDATE product
+       SET unit_price = $1
+       WHERE product_id = $2
+       RETURNING product_id, product_name, unit_price`,
+      [unit_price, id]
     );
 
     if (result.rows.length === 0) {
       return res.status(404).json({
-        message: "Customer not found",
+        message: "Product not found",
       });
     }
 
     res.status(200).json(result.rows[0]);
   } catch (error) {
-    console.error("Error updating customer:", error);
+    console.error("Error updating product price:", error);
 
     res.status(400).json({
-      message: "Unable to update customer",
+      message: "Unable to update product price",
     });
   }
 });
 
-//Delete a customer
-router.delete("/:id", async (req, res) => {
+//delete a product
+router.delete("/:id", async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
 
     const result = await pool.query(
-      "DELETE FROM customer WHERE customer_id = $1 RETURNING customer_id",
+      "DELETE FROM products WHERE product_id = $1 RETURNING product_id",
       [id]
     );
 
     if (result.rows.length === 0) {
       return res.status(404).json({
-        message: "Customer not found",
+        message: "product not found",
       });
     }
 
     res.status(200).json({
-      message: "Customer deleted successfully",
+      message: "product deleted successfully",
     });
   } catch (error) {
-    console.error("Error deleting customer:", error);
+    console.error("Error deleting product:", error);
 
     res.status(400).json({
       message:
-        "Unable to delete customer. The customer may have existing orders.",
+        "Unable to delete product. The product may have existing orders.",
     });
   }
 });
