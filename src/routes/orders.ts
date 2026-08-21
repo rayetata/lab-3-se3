@@ -7,7 +7,7 @@ const router = Router();
 router.get("/", async (req: Request, res: Response) => {
   try {
     const result =  await pool.query(
-        "SELECT order_id, customer_id, order_date, shipping_city FROM orders"
+        "SELECT order_id, customer_id, order_date::text AS order_date, shipping_city FROM orders"
     );
 
     res.status(200).json(result.rows);
@@ -24,17 +24,11 @@ router.get("/", async (req: Request, res: Response) => {
 router.get("/customer/:customerId", async (req: Request, res: Response) => {
   try {
     const { customerId } = req.params;
-    
+
     const result = await pool.query(
-      "SELECT order_id, customer_id, order_date, shipping_city  FROM orders WHERE customer_id = $1",
+      "SELECT order_id, customer_id, order_date::text AS order_date, shipping_city FROM orders WHERE customer_id = $1",
       [customerId]
     );
-
-    if (result.rows.length === 0) {
-      return res.status(404).json({
-        message: "orders not found",
-      });
-    }
 
     res.status(200).json(result.rows);
   } catch (error) {
@@ -65,7 +59,7 @@ router.post("/", async (req: Request, res: Response) => {
     const result = await pool.query(
       `INSERT INTO orders (order_id, customer_id, order_date, shipping_city)
        VALUES ($1, $2, $3, $4)
-       RETURNING order_id, customer_id, order_date, shipping_city`,
+       RETURNING order_id, customer_id, order_date::text AS order_date, shipping_city`,
       [order_id, customer_id, order_date, shipping_city]
     );
 
@@ -79,33 +73,47 @@ router.post("/", async (req: Request, res: Response) => {
   }
 });
 
-//delete a product
+//delete an order
 router.delete("/:id", async (req: Request, res: Response) => {
+  const client = await pool.connect();
+
   try {
     const { id } = req.params;
 
-    const result = await pool.query(
-      "DELETE FROM orders WHERE order_id = $1 RETURNING order_id",
+    await client.query("BEGIN");
+
+    const existing = await client.query(
+      "SELECT order_id FROM orders WHERE order_id = $1",
       [id]
     );
 
-    if (result.rows.length === 0) {
+    if (existing.rows.length === 0) {
+      await client.query("ROLLBACK");
+
       return res.status(404).json({
         message: "order not found",
       });
     }
 
+    await client.query("DELETE FROM order_item WHERE order_id = $1", [id]);
+    await client.query("DELETE FROM orders WHERE order_id = $1", [id]);
+
+    await client.query("COMMIT");
+
     res.status(200).json({
       message: "order deleted successfully",
     });
   } catch (error) {
+    await client.query("ROLLBACK").catch(() => {});
+
     console.error("Error deleting order:", error);
 
     res.status(400).json({
-      message:
-        "Unable to delete order. The order may have existing orders.",
+      message: "Unable to delete order",
     });
+  } finally {
+    client.release();
   }
 });
 
-export default router;  
+export default router;
