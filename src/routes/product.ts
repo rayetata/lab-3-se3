@@ -6,13 +6,21 @@ const router = Router();
 //Get all products
 router.get("/", async (req: Request, res: Response) => {
   try {
-    const result =  await pool.query(
-        "SELECT product_id, product_name, category, unit_price FROM product"
+    const { category } = req.query;
+    if (category) {
+      const result = await pool.query(
+      `SELECT product_id, product_name, category, unit_price FROM product WHERE category = $1`,
+      [category]
+      );
+      return res.status(200).json(result.rows);
+    }
+    const result = await pool.query(
+      "SELECT product_id, product_name, category, unit_price FROM product"
     );
 
     res.status(200).json(result.rows);
   } catch (error) {
-    console.error("Error fetching customers:", error);
+    console.error("Error fetching products:", error);
 
     res.status(500).json({
       message: "Internal server error",

@@ -36,7 +36,7 @@ router.get("/customer/:customerId", async (req: Request, res: Response) => {
       });
     }
 
-    res.status(200).json(result.rows[0]);
+    res.status(200).json(result.rows);
   } catch (error) {
     console.error("Error fetching order:", error);
 
