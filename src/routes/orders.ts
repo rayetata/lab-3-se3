@@ -7,7 +7,7 @@ const router = Router();
 router.get("/", async (req: Request, res: Response) => {
   try {
     const result =  await pool.query(
-        "SELECT orders_id, customer_id, order_date, shipping_city FROM orders"
+        "SELECT order_id, customer_id, order_date, shipping_city FROM orders"
     );
 
     res.status(200).json(result.rows);
@@ -20,13 +20,13 @@ router.get("/", async (req: Request, res: Response) => {
   }
 });
 
-// Get one orders by ID
+// Get order by customer ID
 router.get("/customer/:customerId", async (req: Request, res: Response) => {
   try {
     const { customerId } = req.params;
     
     const result = await pool.query(
-      "SELECT order_id, customer_id, order_date, shipping_city  FROM orders WHERE order_id = $1",
+      "SELECT order_id, customer_id, order_date, shipping_city  FROM orders WHERE customer_id = $1",
       [customerId]
     );
 
