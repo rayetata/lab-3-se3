@@ -63,7 +63,7 @@ router.post("/", async (req: Request, res: Response) => {
     }
 
     const result = await pool.query(
-      `INSERT INTO customer
+      `INSERT INTO product
        (product_id, product_name, category, unit_price)
        VALUES ($1, $2, $3, $4)
        RETURNING product_id, product_name, category, unit_price`,
@@ -128,7 +128,7 @@ router.delete("/:id", async (req: Request, res: Response) => {
     const { id } = req.params;
 
     const result = await pool.query(
-      "DELETE FROM products WHERE product_id = $1 RETURNING product_id",
+      "DELETE FROM product WHERE product_id = $1 RETURNING product_id",
       [id]
     );
 

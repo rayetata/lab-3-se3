@@ -21,13 +21,13 @@ router.get("/", async (req: Request, res: Response) => {
 });
 
 // Get one orders by ID
-router.get("/:id", async (req: Request, res: Response) => {
+router.get("/customer/:customerId", async (req: Request, res: Response) => {
   try {
-    const { id } = req.params;
+    const { customerId } = req.params;
     
     const result = await pool.query(
-      "SELECT order_id, customer_is, order_date, shipping_city  FROM orders WHERE order_id = $1",
-      [id]
+      "SELECT order_id, customer_id, order_date, shipping_city  FROM orders WHERE order_id = $1",
+      [customerId]
     );
 
     if (result.rows.length === 0) {

@@ -17,20 +17,6 @@ app.get("/", (req, res) => {
   });
 });
 
-app.get("/api/v1/products", async (req, res) => {
-  try {
-    const result = await pool.query("SELECT * FROM product");
-
-    res.status(200).json(result.rows);
-  } catch (error) {
-    console.error(error);
-
-    res.status(500).json({
-      message: "Internal server error",
-    });
-  }
-});
-
 app.use("/api/v1/customers", customerRoutes);
 app.use("/api/v1/orders", orderRoutes);
 app.use("/api/v1/products", productRoutes);
