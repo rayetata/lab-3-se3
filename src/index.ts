@@ -38,6 +38,10 @@ app.use("/api/v1/order-items", orderItemRoutes);
 app.use("/api/v1/vendors", vendorRoutes);
 app.use("/api/v1/supplies", supplyRoutes);
 
+app.use((req, res) => {
+  res.status(404).json({ message: "Route not found" });
+});
+
 const PORT = 3000;
 
 app.listen(PORT, () => {
